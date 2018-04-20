@@ -10,3 +10,10 @@ mysql:
     destination: /backup/prepare/PROJECT1/databases/
     gzip: true
     blacklist: ["performance_schema", "information_schema"]
+
+rsync:
+  mysql-dumps:
+    from: /path/to/source/folder/ending/in/slash/
+    to: /path/to/destination/
+    user: john
+    host: backup.company.com

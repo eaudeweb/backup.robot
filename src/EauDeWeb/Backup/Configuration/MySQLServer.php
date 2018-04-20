@@ -6,8 +6,6 @@ use EauDeWeb\Backup\BackupException;
 
 class MySQLServer {
 
-  use \Robo\Task\MySql\loadTasks;
-
   public $config;
 
   public function __construct($config) {

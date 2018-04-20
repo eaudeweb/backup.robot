@@ -55,4 +55,15 @@ class Configuration {
     }
     return $ret;
   }
+
+  public function getRsyncTasks() {
+    $ret = [];
+    if (!empty(self::$config['rsync'])) {
+      foreach (self::$config['rsync'] as $id => $conf) {
+        $server = Rsync::create(array('id' => $id) + $conf);
+        $ret[$id] = $server;
+      }
+    }
+    return $ret;
+  }
 }

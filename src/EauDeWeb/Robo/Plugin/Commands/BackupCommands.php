@@ -92,6 +92,7 @@ class BackupCommands extends \Robo\Tasks implements BackupInterface {
       pcntl_signal(SIGINT, [self::class, 'shutdown']);
     }
 
+    // MySQL-related tasks
     $dbServers = Configuration::get()->getMySQLServers();
     /** @var \EauDeWeb\Backup\Configuration\MySQLServer $server */
     foreach ($dbServers as $k => $server) {
@@ -113,21 +114,35 @@ class BackupCommands extends \Robo\Tasks implements BackupInterface {
             ->gzip($server->gzip())
             ->socket($server->socket())
             ->run();
-//          $status = $server->backup();
-//          switch ($status) {
-//            case self::BACKUP_SUCCESS:
-//              $this->say("[MySQL][{$k}] Finished successfully");
-//              break;
-//            case self::BACKUP_PARTIAL:
-//              $this->yell("[MySQL][{$k}] Partial backup", NULL, 'yellow');
-//              break;
-//            case self::BACKUP_ERROR:
-//              $this->yell("[MySQL][{$k}] Failed", NULL, 'red');
-//          }
         } catch (\Exception $e) {
           $this->yell("[MySQL] Backup failed for: {$k} ({$e->getMessage()})", NULL, 'red');
         }
       }
+    }
+
+    // Rsync tasks
+    $rsyncTasks = Configuration::get()->getRsyncTasks();
+    /** @var \EauDeWeb\Backup\Configuration\Rsync $task */
+    foreach ($rsyncTasks as $k => $task) {
+      $this->say("[Rsync][{$k}] Starting rsync process for {$task->user()}@{$task->host()}");
+      $this->say("[Rsync][{$k}]     Source: {$task->from()}");
+      $this->say("[Rsync][{$k}]     Destination: {$task->user()}@{$task->host()}:{$task->to()}");
+      $this->taskRsync()
+        ->fromPath($task->from())
+        ->toHost($task->host())
+        ->toUser($task->user())
+        ->toPath($task->to())
+        #->checksum()
+        #->wholeFile()
+        ->recursive()
+        ->delete()
+        ->verbose()
+        ->progress()
+        ->humanReadable()
+        ->stats()
+        ->excludeVcs()
+        ->option('--rsync-path', 'rsync --fake-super', '=')
+        ->run();
     }
   }
 }

@@ -2,7 +2,8 @@
 
 Use backup robot for regular backup schedules. Features:
 
-- MySQL - backup MySQL/MariaDB databases. Supports multiple servers, one file per database. Automatically backups new databases, blacklist unwanted databases. 
+- MySQL - backup MySQL/MariaDB databases. Supports multiple servers, one file per database. Automatically backups new databases, blacklist unwanted databases.
+- Rsync - push local dirs to destination server. Supports copying SELinux attributes on target filesystems. Can be used for rsync "pull files" if orchestrated with installation on the backup server.
 
 ## Prerequisites
 
@@ -16,12 +17,65 @@ Install on a target server the following components:
 
 1. Checkout this project on a target server (i.e. `git clone https://github.com/eaudeweb/backup.robot.git /opt/backup`) with a regular user account
 2. Copy `conf/backup.config.example.yml` to `conf/backup.config.yml` and restrict file permissions (i.e. `chown root:root conf/backup.config.yml && chmod 600 conf/backup.config.yml`)
-3. Customize configuration
+3. Customize configuration as stated in the next chapter.
 4. Start a backup using command: `./vendor/bin/robo backup:backup`
+5. Install a CRON job (TODO) - `backup.sh`
 
+```
+30 2 * * * /path/to/backup.sh
+```
+
+**Disclaimer: The code above is not tested in production**
+
+## Configuration
+
+Configuration is done in `conf/backup.config.yml` file and is quite simple:
+
+### MySQL dump configuration
+
+You can specify several MySQL servers at once - if needed. The dumps will be done on local filesystem.
+
+```yml
+mysql:
+  host1:
+    type:
+    host: 127.0.0.1
+    port: 3306
+    user: root
+    password: secret
+    destination: /path/to/dumps/host1/
+    gzip: true
+    blacklist: ["performance_schema", "information_schema"]
+  host2:
+    type:
+    host: 127.0.0.1
+    port: 1306
+    user: root
+    password: secret
+    destination: /path/to/dumps/host2/
+    gzip: true
+    blacklist: ["performance_schema", "information_schema", "project_test"]
+```
+
+### Rsync configuration
+
+You can specify several rsync jobs by declaring them under `rsync` key.
+
+```yml
+rsync:
+  dir1:
+    from: /path/to/source/folder1/ending/in/slash/
+    to: /path/to/destination/dest1/
+    user: john
+    host: backup.company.com
+  dir2:
+    from: /path/to/source/folder2/ending/in/slash/
+    to: /path/to/destination/dest2/
+    user: john
+    host: backup.company.com
+```
 
 ## Useful commands
-
 
 1. `backup:status` - Overview of backup tasks
 
