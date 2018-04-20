@@ -66,4 +66,11 @@ class Configuration {
     }
     return $ret;
   }
+
+  public function getEmail() {
+    if (!empty(self::$config['email'])) {
+      return Email::create(self::$config['email']);
+    }
+    return null;
+  }
 }
