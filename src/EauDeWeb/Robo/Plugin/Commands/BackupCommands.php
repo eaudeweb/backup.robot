@@ -50,18 +50,20 @@ class BackupCommands extends \Robo\Tasks implements BackupInterface {
         else {
           $this->yell(sprintf("       - Cannot connect"), NULL, 'red');
         }
-        $this->say(sprintf("        - Backup to %s", $server->backupDir()));
+        $this->say(sprintf("        - Backup to %s", $server->backupDestination()));
         if ($server->validateBackupWritable()) {
           $this->say(sprintf("        - Backup writable: YES"));
         }
         else {
           $this->yell(sprintf("       - Backup writable: NO"), NULL, 'red');
         }
+        $databases = $server->databasesToBackup();
+        $this->say(sprintf("        - Backup databases: [%s]", implode(', ', $databases)));
       }
   }
 
   /**
-   * Prepare backups (i.e. MySQL dumps, archives etc.)
+   * Prepare backups (i.e. MySQL dump destination folders, archives etc.)
    * @command backup:prepare
    * @throws \Exception
    *   When something went wrong.
@@ -70,9 +72,10 @@ class BackupCommands extends \Robo\Tasks implements BackupInterface {
     $dbServers = Configuration::get()->getMySQLServers();
     /** @var \EauDeWeb\Backup\Configuration\MySQLServer $server */
     foreach ($dbServers as $k => $server) {
-      $this->say("[MySQL] Running prepare for: {$k}");
+      #$this->say("[MySQL] Running prepare for: {$k}");
       $server->prepare();
     }
+    $this->say("Preparation done.");
   }
 
   /**
@@ -98,9 +101,9 @@ class BackupCommands extends \Robo\Tasks implements BackupInterface {
       if (empty($databases)) {
         $this->yell("[MySQL][{$k}] Warning, no databases selected for backup!", NULL, 'yellow');
       }
+      $server->prepare();
       foreach ($databases as $database) {
         try {
-          $server->prepare();
           $this->say("[MySQL][{$k}][{$database}] Dumping database");
           $this->taskMySQLDump($database, $server->backupDestination())
             ->host($server->host())

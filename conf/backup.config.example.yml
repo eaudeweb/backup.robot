@@ -1,12 +1,12 @@
 version: 1.0
 
 mysql:
-  mara:
+  localhost:
     type:
     host: 127.0.0.1
     port: 3306
     user: root
-    password: root
+    password: secret
     destination: /backup/prepare/PROJECT1/databases/
     gzip: true
-    blacklist: ["performance_schema",]
+    blacklist: ["performance_schema", "information_schema"]
