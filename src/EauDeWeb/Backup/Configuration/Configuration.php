@@ -4,6 +4,11 @@ namespace EauDeWeb\Backup\Configuration;
 
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * Class Configuration is used to access configuration for the backup process.
+ *
+ * @package EauDeWeb\Backup\Configuration
+ */
 class Configuration {
 
   private static $instance = null;
@@ -28,7 +33,9 @@ class Configuration {
    *   When cannot read the configuration file.
    */
   public function __construct() {
-    $file = realpath(dirname(__FILE__) . '/../../../../conf/backup.config.yml');
+    $config_filename = 'backup.config.yml';
+    $dir = realpath(dirname(__FILE__) . '/../../../../conf/');
+    $file = $dir . '/' . $config_filename;
     if (!is_readable($file)) {
       throw new \Exception("Cannot read configuration file at {$file}");
     }
@@ -40,7 +47,6 @@ class Configuration {
       }
     }
   }
-
 
   /**
    * @return array \EauDeWeb\Backup\Configuration\MySQLServer
