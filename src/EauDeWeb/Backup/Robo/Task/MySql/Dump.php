@@ -1,6 +1,6 @@
 <?php
 
-namespace Robo\Task\MySql;
+namespace EauDeWeb\Backup\Robo\Task\MySql;
 
 class Dump extends Base {
 

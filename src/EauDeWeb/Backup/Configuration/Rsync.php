@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: cristiroma
- * Date: 4/20/18
- * Time: 6:47 PM
- */
 
 namespace EauDeWeb\Backup\Configuration;
 

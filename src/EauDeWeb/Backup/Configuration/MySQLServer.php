@@ -131,9 +131,7 @@ class MySQLServer {
   public function prepare() {
     $destination = $this->backupDestination();
     if (!is_writable($destination)) {
-      if (!mkdir($destination, 0770, true)) {
-        throw new BackupException("Cannot create dump destination: {$destination}");
-      }
+      throw new BackupException("Dump destination missing, please create path: {$destination}");
     }
   }
 }
