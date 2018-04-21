@@ -13,8 +13,6 @@ class Configuration {
 
   /**
    * @return \EauDeWeb\Backup\Configuration\Configuration|null
-   * @throws \Exception
-   *   When cannot parse configuration file.
    */
   public static function get() {
     if (empty(self::$instance)) {
