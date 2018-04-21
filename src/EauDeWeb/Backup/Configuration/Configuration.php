@@ -46,7 +46,7 @@ class Configuration {
    */
   public function getRsyncTasks() {
     $ret = [];
-    if ($tasks = \Robo\Robo::config()->get('backup.mysql')) {
+    if ($tasks = \Robo\Robo::config()->get('backup.rsync')) {
       foreach ($tasks as $id => $conf) {
         $server = Rsync::create(array('id' => $id) + $conf);
         $ret[$id] = $server;

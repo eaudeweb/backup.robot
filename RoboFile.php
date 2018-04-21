@@ -9,6 +9,8 @@ use EauDeWeb\Backup\Configuration\Configuration;
  */
 class RoboFile extends \Robo\Tasks {
 
+  use EauDeWeb\Backup\Robo\Task\MySql\loadTasks;
+
   /** This backup.robot release version */
   const VERSION = "0.0.1";
 
@@ -43,6 +45,27 @@ class RoboFile extends \Robo\Tasks {
       }
       $databases = $server->databasesToBackup();
       $this->say(sprintf("        - Backup databases: [%s]", implode(', ', $databases)));
+    }
+
+    // Rsync tasks
+    $rsyncTasks = Configuration::get()->getRsyncTasks();
+    if (!empty($rsyncTasks)) {
+      $this->say("Rsync tasks:");
+      /** @var \EauDeWeb\Backup\Configuration\Rsync $task */
+      foreach ($rsyncTasks as $task) {
+        if ($task->validateLocalRsync($this->taskExec('which rsync'))) {
+          $this->say(sprintf("        - This host has rsync installed"));
+        }
+        else {
+          $this->yell(sprintf("       - This host is missing rsync command"), NULL, 'red');
+        }
+        if ($task->validateConnection($this->taskSshExec($task->host(), $task->user()))) {
+          $this->say(sprintf("        - Connected successfully (%s@%s:%d), target has rsync", $task->user(), $task->host(), $task->port()));
+        }
+        else {
+          $this->yell(sprintf("       - Unsuitable server: (%s@%s:%d)  - host unreachable or does not have rsync installed)", $task->user(), $task->host(), $task->port()), NULL, 'red');
+        }
+      }
     }
   }
 
