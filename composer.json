@@ -4,7 +4,6 @@
     "type": "project",
     "require": {
         "consolidation/robo": "^1.2",
-        "symfony/yaml": "^3.4",
         "phpmailer/phpmailer": "^6.0"
     },
     "require-dev": {
@@ -19,8 +18,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "EauDeWeb\\": "./src/EauDeWeb/",
-            "Robo\\": "./src/Robo/"
+            "EauDeWeb\\": "./src/EauDeWeb/"
         }
     }
 }

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: cristiroma
- * Date: 4/20/18
- * Time: 6:47 PM
- */
 
 namespace EauDeWeb\Backup\Configuration;
 
@@ -30,7 +24,31 @@ class Rsync {
     // @TODO: Validate - source path is available and readable.
     // @TODO: Validate - destination server is reachable and can connect to it.
     // @TODO: Validate - destination has rsync command available
+    // @TODO: Validate local rsync
     return true;
+  }
+
+  public function validateLocalRsync($runner) {
+    /** @var \Robo\Result $result */
+    $result = $runner->run();
+    if ($result->getExitCode() === 0) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * @param \Robo\Task\Remote\Ssh $sshTask
+   *
+   * @return bool
+   */
+  public function validateConnection($runner) {
+    /** @var \Robo\Result $result */
+    $result = $runner->quiet()->port($this->port())->exec('which rsync')->run();
+    if ($result->getExitCode() === 0) {
+      return true;
+    }
+    return false;
   }
 
   public function config($name) {
@@ -51,5 +69,9 @@ class Rsync {
 
   public function host() {
     return $this->config('host');
+  }
+
+  public function port() {
+    return $this->config('port');
   }
 }

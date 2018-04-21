@@ -1,11 +1,11 @@
 <?php
 
-namespace Robo\Task\MySql;
+namespace EauDeWeb\Backup\Robo\Task\MySql;
 
 trait loadTasks {
 
   /**
-   * @return \Robo\Task\MySQL\Dump
+   * @return \EauDeWeb\Backup\Robo\Task\MySql\Dump
    */
   protected function taskMySQLDump($database, $destination) {
     return $this->task(Dump::class, $database, $destination);

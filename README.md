@@ -16,7 +16,7 @@ Install on a target server the following components:
 ## Setup
 
 1. Checkout this project on a target server (i.e. `git clone https://github.com/eaudeweb/backup.robot.git /opt/backup`) with a regular user account
-2. Copy `conf/backup.config.example.yml` to `conf/backup.config.yml` and restrict file permissions (i.e. `chown root:root conf/backup.config.yml && chmod 600 conf/backup.config.yml`)
+2. Copy `robo.example.yml` to `robo.yml` and restrict file permissions (i.e. `chown root:root robo.yml && chmod 600 robo.yml`)
 3. Customize configuration as stated in the next chapter.
 4. Start a backup using command: `./vendor/bin/robo backup:backup`
 5. Install a CRON job (TODO) - `backup.sh`
@@ -29,32 +29,34 @@ Install on a target server the following components:
 
 ## Configuration
 
-Configuration is done in `conf/backup.config.yml` file and is quite simple:
+Configuration is done in `robo.yml` file and is quite simple:
 
 ### MySQL dump configuration
 
 You can specify several MySQL servers at once - if needed. The dumps will be done on local filesystem.
 
 ```yml
-mysql:
-  host1:
-    type:
-    host: 127.0.0.1
-    port: 3306
-    user: root
-    password: secret
-    destination: /path/to/dumps/host1/
-    gzip: true
-    blacklist: ["performance_schema", "information_schema"]
-  host2:
-    type:
-    host: 127.0.0.1
-    port: 1306
-    user: root
-    password: secret
-    destination: /path/to/dumps/host2/
-    gzip: true
-    blacklist: ["performance_schema", "information_schema", "project_test"]
+backup:
+  version: "1.0"
+  mysql:
+    host1:
+      type:
+      host: 127.0.0.1
+      port: 3306
+      user: root
+      password: secret
+      destination: /path/to/dumps/host1/
+      gzip: true
+      blacklist: ["performance_schema", "information_schema"]
+    host2:
+      type:
+      host: 127.0.0.1
+      port: 1306
+      user: root
+      password: secret
+      destination: /path/to/dumps/host2/
+      gzip: true
+      blacklist: ["performance_schema", "information_schema", "project_test"]
 ```
 
 ### Rsync configuration
@@ -62,17 +64,19 @@ mysql:
 You can specify several rsync jobs by declaring them under `rsync` key.
 
 ```yml
-rsync:
-  dir1:
-    from: /path/to/source/folder1/ending/in/slash/
-    to: /path/to/destination/dest1/
-    user: john
-    host: backup.company.com
-  dir2:
-    from: /path/to/source/folder2/ending/in/slash/
-    to: /path/to/destination/dest2/
-    user: john
-    host: backup.company.com
+backup:
+  version: "1.0"
+  rsync:
+    dir1:
+      from: /path/to/source/folder1/ending/in/slash/
+      to: /path/to/destination/dest1/
+      user: john
+      host: backup.company.com
+    dir2:
+      from: /path/to/source/folder2/ending/in/slash/
+      to: /path/to/destination/dest2/
+      user: john
+      host: backup.company.com
 ```
 
 ## Useful commands

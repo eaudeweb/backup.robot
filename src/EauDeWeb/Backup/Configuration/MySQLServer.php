@@ -32,9 +32,10 @@ class MySQLServer {
     if ($this->validateMysqliExtension()) {
       $ret = FALSE;
       try {
-        $conn = $this->connect();
+        if ($conn = $this->connect()) {
+          @mysqli_close($conn);
+        }
         $ret = !empty($conn);
-        @mysqli_close($conn);
       } catch (\Exception $e) {
       }
     }
@@ -42,7 +43,12 @@ class MySQLServer {
   }
 
   public function connect() {
-    return @mysqli_connect($this->host(), $this->user(), $this->password(), NULL, $this->port());
+    $conn = null;
+    $conn = @mysqli_connect($this->host(), $this->user(), $this->password(), NULL, $this->port());
+    if (mysqli_connect_errno()) {
+      \Robo\Robo::logger()->critical(mysqli_connect_error());
+    }
+    return $conn;
   }
 
   /**
@@ -99,10 +105,12 @@ class MySQLServer {
    */
   public function databases() {
     $ret = [];
-    $conn = $this->connect();
-    $result = @mysqli_query($conn, 'SHOW DATABASES');
-    while($row = $result->fetch_row()) {
-      $ret [] = $row[0];
+    if ($conn = $this->connect()) {
+      if ($result = @mysqli_query($conn, 'SHOW DATABASES')) {
+        while ($row = $result->fetch_row()) {
+          $ret [] = $row[0];
+        }
+      }
     }
     return $ret;
   }
@@ -123,9 +131,7 @@ class MySQLServer {
   public function prepare() {
     $destination = $this->backupDestination();
     if (!is_writable($destination)) {
-      if (!mkdir($destination, 0770, true)) {
-        throw new BackupException("Cannot create dump destination: {$destination}");
-      }
+      throw new BackupException("Dump destination missing, please create path: {$destination}");
     }
   }
 }

@@ -2,12 +2,14 @@
 
 namespace EauDeWeb\Backup\Configuration;
 
-use Symfony\Component\Yaml\Yaml;
-
+/**
+ * Class Configuration is used to access configuration for the backup process.
+ *
+ * @package EauDeWeb\Backup\Configuration
+ */
 class Configuration {
 
   private static $instance = null;
-  public static $config = null;
 
   /**
    * @return \EauDeWeb\Backup\Configuration\Configuration|null
@@ -22,33 +24,14 @@ class Configuration {
   }
 
   /**
-   * Configuration constructor.
+   * Retrieve the configured MySQL servers to backup.
    *
-   * @throws \Exception
-   *   When cannot read the configuration file.
-   */
-  public function __construct() {
-    $file = realpath(dirname(__FILE__) . '/../../../../conf/backup.config.yml');
-    if (!is_readable($file)) {
-      throw new \Exception("Cannot read configuration file at {$file}");
-    }
-    if (empty(self::$config)) {
-      try {
-        self::$config = Yaml::parse(file_get_contents($file));
-      } catch( \Exception $e) {
-        throw new \Exception("Error parsing configuration file: {$file} ({$e->getMessage()})");
-      }
-    }
-  }
-
-
-  /**
    * @return array \EauDeWeb\Backup\Configuration\MySQLServer
    */
   public function getMySQLServers() {
     $ret = [];
-    if (!empty(self::$config['mysql'])) {
-      foreach (self::$config['mysql'] as $id => $conf) {
+    if ($servers = \Robo\Robo::config()->get('backup.mysql')) {
+      foreach ($servers as $id => $conf) {
         $server = MySQLServer::create(array('id' => $id) + $conf);
         $ret[$id] = $server;
       }
@@ -56,10 +39,15 @@ class Configuration {
     return $ret;
   }
 
+  /**
+   * Retrieve the configured Rsync tasks to execute.
+   *
+   * @return array Rsync
+   */
   public function getRsyncTasks() {
     $ret = [];
-    if (!empty(self::$config['rsync'])) {
-      foreach (self::$config['rsync'] as $id => $conf) {
+    if ($tasks = \Robo\Robo::config()->get('backup.rsync')) {
+      foreach ($tasks as $id => $conf) {
         $server = Rsync::create(array('id' => $id) + $conf);
         $ret[$id] = $server;
       }
