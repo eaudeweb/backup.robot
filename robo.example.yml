@@ -17,3 +17,19 @@ backup:
       to: /path/to/destination/
       user: john
       host: backup.company.com
+
+  email:
+    server:
+      debug-level: 0 # 0 - no output (for production), 1 - client messages, 2 - client + server messages
+      type: smtp # or 'mail' or 'sendmail' or 'qmail'
+      host: secure.emailserver.com
+      port: 465
+      protocol: tls # or 'ssl' (deprecated)
+      auth: true
+      username: email@compay.com
+      password: secret
+    from: backup@company.com
+    to: sysadmin@company.com
+    subject:
+      success: "[OK][SERVER-PROD01] Backup success"
+      fail: "[OK][SERVER-PROD01] Backup failed"

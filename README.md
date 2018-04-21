@@ -4,6 +4,7 @@ Use backup robot for regular backup schedules. Features:
 
 - MySQL - backup MySQL/MariaDB databases. Supports multiple servers, one file per database. Automatically backups new databases, blacklist unwanted databases.
 - Rsync - push local dirs to destination server. Supports copying SELinux attributes on target filesystems. Can be used for rsync "pull files" if orchestrated with installation on the backup server.
+- Email report - the backup process can be configured to send a backup report to an email with custom subject for failed or success backups
 
 ## Prerequisites
 
@@ -77,6 +78,29 @@ backup:
       to: /path/to/destination/dest2/
       user: john
       host: backup.company.com
+```
+
+### Email configuration
+
+The `email` configuration section can be set to send an email report. The underlying library is PHPMailer. Customize
+the `subject.success` and `subject.fail` to receive and customized email message.
+
+```
+  email:
+    server:
+      debug-level: 0 # 0 - no output (for production), 1 - client messages, 2 - client + server messages
+      type: smtp # or 'mail' or 'sendmail' or 'qmail'
+      host: secure.emailserver.com
+      port: 465
+      protocol: tls # or 'ssl' (deprecated)
+      auth: true
+      username: email@compay.com
+      password: secret
+    from: backup@company.com
+    to: sysadmin@company.com
+    subject:
+      success: "[OK][SERVER-PROD01] Backup success"
+      fail: "[OK][SERVER-PROD01] Backup failed"
 ```
 
 ## Useful commands

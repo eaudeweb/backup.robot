@@ -154,6 +154,19 @@ class RoboFile extends \Robo\Tasks {
   }
 
   /**
+   * It does nothing, used for development and debugging.
+   * @command backup:dummy
+   * @throws \Exception
+   *   When something went wrong.
+   */
+  public function dummy() {
+    /** @var \EauDeWeb\Backup\Configuration\Email $email */
+    $email = Configuration::get()->getEmail();
+    $message = $email->createMessage('TEST', 'test1122');
+    $message->send();
+  }
+
+  /**
    * Intercept system closing and cleanup remaining tempoary files.
    */
   public static function shutdown() {

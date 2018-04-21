@@ -56,9 +56,10 @@ class Configuration {
   }
 
   public function getEmail() {
-    if (!empty(self::$config['email'])) {
-      return Email::create(self::$config['email']);
+    $ret = null;
+    if ($config = \Robo\Robo::config()->get('backup.email')) {
+      $ret = Email::create($config);
     }
-    return null;
+    return $ret;
   }
 }
