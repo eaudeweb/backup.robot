@@ -157,6 +157,7 @@ class RoboFile extends \Robo\Tasks {
         $rsync = $this->taskRsync();
         $result = $rsync->fromPath($task->from())
           ->silent(true)
+          ->option('-e', 'ssh -p ' . $task->port())
           ->toHost($task->host())
           ->toUser($task->user())
           ->toPath($task->to())
