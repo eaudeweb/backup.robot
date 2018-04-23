@@ -1,4 +1,4 @@
-# Backup.Robot
+# Backup.Robot 🤖
 
 Use backup robot for regular backup schedules. Features:
 
