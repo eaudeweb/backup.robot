@@ -13,11 +13,9 @@ class MySQLServer {
   }
 
   public function validate() {
-    // @TODO: Validate - mysqli PHP extension installed
     // @TODO: Validate - mysql command line exists
-    // @TODO: Validate - DUMP directory exists and is writable
     // @TODO: Validate - gzip is available if gzip flag is set.
-    return true;
+    return $this->validateMysqliExtension() && $this->validateBackupWritable() && $this->validateConnection();
   }
 
   public function validateMysqliExtension() {

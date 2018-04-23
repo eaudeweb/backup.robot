@@ -14,6 +14,7 @@ if ($pharPath) {
   }
 }
 #$output = new \Symfony\Component\Console\Output\NullOutput();
+#$output = new \Symfony\Component\Console\Output\BufferedOutput();
 $output = new \Symfony\Component\Console\Output\ConsoleOutput();
 $statusCode = \Robo\Robo::run(
   $_SERVER['argv'],

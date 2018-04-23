@@ -19,7 +19,7 @@ class RoboFile extends \Robo\Tasks {
   const VERSION = "0.0.1";
 
   public function __construct() {
-    $tz = \Robo\Robo::config()->get('backup.defaults.timezone');
+    $tz = Robo::config()->get('backup.defaults.timezone');
     date_default_timezone_set($tz);
   }
 
@@ -33,7 +33,7 @@ class RoboFile extends \Robo\Tasks {
   public function status() {
     $this->say(sprintf("🤖 Backup rObOt v.%s - Crafted with ♥ at www.eaudeweb.ro", self::VERSION));
     $this->say("############### Configuration summary ###############");
-    $config = Configuration::create(\Robo\Robo::config()->get('backup'));
+    $config = Configuration::create(Robo::config()->get('backup'));
     $projects = $config->getProjects();
     /** @var \EauDeWeb\Backup\Configuration\Project $project */
     foreach($projects as $id => $project) {
@@ -91,13 +91,14 @@ class RoboFile extends \Robo\Tasks {
    *   When the configuration fails.
    */
   public function backup() {
+    $status = true;
     $log = BackupLogger::get();
     $log->debug("Registering shutdown hook");
     register_shutdown_function([self::class, 'shutdown']);
     if (function_exists('pcntl_signal')) {
       pcntl_signal(SIGINT, [self::class, 'shutdown']);
     }
-    $config = Configuration::create(\Robo\Robo::config()->get('backup'));
+    $config = Configuration::create(Robo::config()->get('backup'));
     $projects = $config->getProjects();
 
     /** @var \EauDeWeb\Backup\Configuration\Project $project */
@@ -108,24 +109,38 @@ class RoboFile extends \Robo\Tasks {
       /** @var \EauDeWeb\Backup\Configuration\MySQLServer $server */
       foreach ($dbServers as $k => $server) {
         $log->info("[MySQL][{$k}] Starting backup process for {$server->user()}@{$server->host()}");
+        if (!$server->validate()) {
+          $log->error("[MySQL][{$k}] Server validation failed, aborting ...");
+          $status = false;
+          continue;
+        }
         $log->info("[MySQL][{$k}] Preparing backups");
         $databases = $server->databasesToBackup();
         if (empty($databases)) {
+          $status = false;
           $log->warning("[MySQL][{$k}] Warning, no databases selected for backup!");
         }
         $server->prepare();
         foreach ($databases as $database) {
           try {
             $log->info("[MySQL][{$k}][{$database}] Dumping database");
+            /** @var \Robo\Collection\CollectionBuilder $mysql */
             $mysql = $this->taskMySQLDump($database, $server->backupDestination());
             /** @var \Robo\Result $result */
             $result = $mysql->host($server->host())
+              ->silent(true)
               ->port($server->port())
               ->user($server->user())
               ->password($server->password())
               ->gzip($server->gzip())
               ->socket($server->socket())
               ->run();
+            #$o = Robo::getContainer()->get('output');
+            #$o->fetch();
+            $success = $result->wasSuccessful();
+            $status = $status && $success;
+            $log->info(sprintf("[MySQL][{$k}][{$database}] Execution took: %.1f seconds", $result->getExecutionTime()));
+            $log->info(sprintf("[MySQL][{$k}][{$database}] Result: %s", $success ? 'Success' : 'Failure'));
           } catch (\Exception $e) {
             $log->error("[MySQL] Backup failed for: {$k} ({$e->getMessage()})");
           }
@@ -137,11 +152,11 @@ class RoboFile extends \Robo\Tasks {
       /** @var \EauDeWeb\Backup\Configuration\Rsync $task */
       foreach ($rsyncTasks as $k => $task) {
         $log->info("[Rsync][{$k}] Starting rsync process for {$task->user()}@{$task->host()}");
-        $log->info("[Rsync][{$k}]     Source: {$task->from()}");
-        $log->info("[Rsync][{$k}]     Destination: {$task->user()}@{$task->host()}:{$task->to()}");
+        $log->info("[Rsync][{$k}]    Source: {$task->from()}");
+        $log->info("[Rsync][{$k}]    Destination: {$task->user()}@{$task->host()}:{$task->to()}");
         $rsync = $this->taskRsync();
-        $rsync->setLogger($log);
-        $rsync->fromPath($task->from())
+        $result = $rsync->fromPath($task->from())
+          ->silent(true)
           ->toHost($task->host())
           ->toUser($task->user())
           ->toPath($task->to())
@@ -156,12 +171,18 @@ class RoboFile extends \Robo\Tasks {
           ->excludeVcs()
           ->option('--rsync-path', 'rsync --fake-super', '=')
           ->run();
+        #$o = Robo::getContainer()->get('output');
+        #$o->fetch();
+        $success = $result->wasSuccessful();
+        $status = $status && $success;
+        $log->info(sprintf("[Rsync][{$k}]    Execution took: %.1f seconds", $result->getExecutionTime()));
+        $log->info("[Rsync][{$k}]    Result: " . ($result->wasSuccessful() ? 'Success' : 'Failure'));
       }
     }
 
     if ($email = $config->getDefaultEmail()) {
-      $subject = $email->subjectSuccess();
-      $message = $email->createEmailBackupReport($subject, $log->getLogFilePath(), 'This is a default body');
+      $subject = $status === true ? $email->subjectSuccess() : $email->subjectFail();
+      $message = $email->createEmailBackupReport($subject, $log->getLogFilePath(), 'Output log');
       $message->send();
     }
   }
@@ -173,7 +194,7 @@ class RoboFile extends \Robo\Tasks {
    *   When something went wrong.
    */
   public function dummy() {
-    $config = Configuration::create(\Robo\Robo::config()->get('backup'));
+    $config = Configuration::create(Robo::config()->get('backup'));
 
     /** @var \EauDeWeb\Backup\Configuration\Email $email */
     $email = $config->getDefaultEmail();
