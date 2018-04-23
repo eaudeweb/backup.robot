@@ -15,9 +15,6 @@ class RoboFile extends \Robo\Tasks {
 
   use \EauDeWeb\Backup\Robo\Task\MySql\loadTasks;
 
-  /** This backup.robot release version */
-  const VERSION = "0.0.1";
-
   public function __construct() {
     $tz = Robo::config()->get('backup.defaults.timezone');
     date_default_timezone_set($tz);
@@ -31,7 +28,8 @@ class RoboFile extends \Robo\Tasks {
    *   When trying to initialize the backup framework
    */
   public function status() {
-    $this->say(sprintf("🤖 Backup rObOt v.%s - Crafted with ♥ at www.eaudeweb.ro", self::VERSION));
+    $app = Robo::application();
+    $this->say(sprintf("🤖 %s v.%s - Crafted with ♥ at www.eaudeweb.ro", $app->getName(), $app->getVersion()));
     $this->say("############### Configuration summary ###############");
     $config = Configuration::create(Robo::config()->get('backup'));
     $projects = $config->getProjects();
@@ -93,6 +91,7 @@ class RoboFile extends \Robo\Tasks {
   public function backup() {
     $status = true;
     $log = BackupLogger::get();
+    $this->say(sprintf("🤖 %s v.%s - Crafted with ♥ at www.eaudeweb.ro", $app->getName(), $app->getVersion()));
     $log->debug("Registering shutdown hook");
     register_shutdown_function([self::class, 'shutdown']);
     if (function_exists('pcntl_signal')) {
