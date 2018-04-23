@@ -23,52 +23,22 @@ class Configuration {
 
   public function getProjects() {
     $ret = [];
-    if ($projects = \Robo\Robo::config()->get('backup.projects')) {
-      foreach ($projects as $name => $config) {
-        var_dump($config);
-      }
-
-    }
-    return $ret;
-  }
-
-  /**
-   * Retrieve the configured MySQL servers to backup.
-   *
-   * @return array \EauDeWeb\Backup\Configuration\MySQLServer
-   */
-  public function getMySQLServers() {
-    $ret = [];
-    if ($servers = \Robo\Robo::config()->get('backup.mysql')) {
-      foreach ($servers as $id => $conf) {
-        $server = MySQLServer::create(array('id' => $id) + $conf);
-        $ret[$id] = $server;
+    if ($rows = \Robo\Robo::config()->get('backup.projects')) {
+      foreach ($rows as $id => $config) {
+        $ret[$id] = new Project($id, $config);
       }
     }
     return $ret;
   }
 
-  /**
-   * Retrieve the configured Rsync tasks to execute.
-   *
-   * @return array Rsync
-   */
-  public function getRsyncTasks() {
-    $ret = [];
-    if ($tasks = \Robo\Robo::config()->get('backup.rsync')) {
-      foreach ($tasks as $id => $conf) {
-        $server = Rsync::create(array('id' => $id) + $conf);
-        $ret[$id] = $server;
-      }
-    }
-    return $ret;
-  }
-
-  public function getEmail() {
+  public function getDefaultEmail() {
     $ret = null;
-    if ($config = \Robo\Robo::config()->get('backup.email')) {
+    if (\Robo\Robo::config()
+        ->get('defaults.email') == TRUE
+        && $config = \Robo\Robo::config()->get('defaults.email')) {
       $ret = Email::create($config);
     }
     return $ret;
   }
+
 }

@@ -17,6 +17,7 @@ class Email {
   const EMAIL_FAIL = 0;
 
   public $config;
+  protected static $attachment_treshold_default = 256000;
 
   public function __construct($config) {
     $this->config = $config;
@@ -29,6 +30,15 @@ class Email {
    */
   public static function create($config) {
     return new Email($config);
+  }
+
+  /**
+   * Is email sending enabled?
+   *
+   * @return bool
+   */
+  public function isEnabled() {
+    return !empty($this->config['enabled']) ? $this->config['enabled'] : false;
   }
 
   /**
@@ -85,6 +95,29 @@ class Email {
       // @TODO
     }
     return null;
+  }
+
+  public function createEmailBackupReport($subject, $logPath, $body = '', $bodyAlt = '') {
+    $message = $this->createMessage($subject, $body, $bodyAlt);
+    if (is_readable($logPath) && $size = @filesize($logPath)) {
+      if ($size <= $this->attachmentThreshold()) {
+        $message->Body = $body . "\n\n ========== Backup log ==========\n\n" . file_get_contents($logPath);
+      }
+      else {
+        if ($this->attachmentCompress()) {
+          // @TODO
+        }
+        else {
+          try {
+            $message->addAttachment($logPath);
+          } catch (\Exception $e) {
+            // @TODO
+          }
+        }
+      }
+    }
+
+    return $message;
   }
 
   public function config($name) {
@@ -151,6 +184,26 @@ class Email {
   public function serverPassword() {
     $arr = $this->config('server');
     return !empty($arr['password']) ? $arr['password'] : null;
+  }
+
+  public function attachmentThreshold() {
+    $ret = self::$attachment_treshold_default;
+    try {
+      if (!empty($this->config['attachment-threshold'])) {
+        $ret = \ByteUnits\parse($this->config['attachment-threshold'])->numberOfBytes();
+      }
+    } catch (\Exception $e) {
+      // @TODO: Log error
+    }
+    return $ret;
+  }
+
+  public function attachmentCompress() {
+    $ret = true;
+    if (isset($this->config['attachment-threshold'])) {
+      $ret = $this->config['attachment-threshold'];
+    }
+    return $ret;
   }
 
 }

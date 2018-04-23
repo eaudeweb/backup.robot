@@ -10,7 +10,7 @@ Use backup robot for regular backup schedules. Features:
 
 Install on a target server the following components:
 
-- PHP >= 5.6 (ex. ` sudo apt-get install php php-cli php-curl php-dev php-gd  php-pear  php-gettext  php-http  php-xdebug  php-xml  php-zip  php-zip php-mbstring php-mysqli`)
+- PHP >= 5.6 (ex. ` sudo apt-get install php php-cli php-curl php-dev php-gd  php-pear  php-gettext  php-http  php-xdebug  php-xml php-bcmath  php-zip  php-zip php-mbstring php-mysqli`)
 - Composer (through system package manager or preferable via https://getcomposer.org/download/)
 - MySQL client libraries for MySQL backup (`apt-get install mariadb-client`)
 
@@ -122,14 +122,7 @@ $> ./vendor/bin/robo backup:status
 
 ```
 
-1. `backup:prepare` - Trigger preparation for backup tasks
-
-Preparation is also triggered as part of the backup process, but this command triggers separately just the preparation.
-
-**Important notes for preparation:**
-- If preparation fails the backup will not run for the respective task;
-- For MySQL preparation means ensuring that destination directories where the dumps are made exists and they are writable.
-
+2. `backup:backup` - Execute the actual backup according to configuration
 ```
 $> ./vendor/bin/robo backup:status
 ```

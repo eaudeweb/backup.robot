@@ -28,66 +28,54 @@ class RoboFile extends \Robo\Tasks {
    */
   public function status() {
     $this->say(sprintf("Backup rObOt v.%s - Crafted with ♥ at www.eaudeweb.ro", self::VERSION));
-    $this->say("========== Backup summary ==========");
-    $config = Configuration::get();
-    $dbServers = $config->getMySQLServers();
-    $this->say("MySQL databases:");
-    /** @var  \EauDeWeb\Backup\Configuration\MySQLServer $server */
-    foreach ($dbServers as $k => $server) {
-      $this->say(sprintf("    - {$k} (%s@%s)", $server->user(), $server->host()));
-      if ($server->validateConnection()) {
-        $this->say(sprintf("        - Connected successfully (mysqli loaded)"));
-      }
-      else {
-        $this->yell(sprintf("       - Cannot connect"), NULL, 'red');
-      }
-      $this->say(sprintf("        - Backup to %s", $server->backupDestination()));
-      if ($server->validateBackupWritable()) {
-        $this->say(sprintf("        - Backup writable: YES"));
-      }
-      else {
-        $this->yell(sprintf("       - Backup writable: NO"), NULL, 'red');
-      }
-      $databases = $server->databasesToBackup();
-      $this->say(sprintf("        - Backup databases: [%s]", implode(', ', $databases)));
-    }
-
-    // Rsync tasks
-    $rsyncTasks = Configuration::get()->getRsyncTasks();
-    if (!empty($rsyncTasks)) {
-      $this->say("Rsync tasks:");
-      /** @var \EauDeWeb\Backup\Configuration\Rsync $task */
-      foreach ($rsyncTasks as $task) {
-        if ($task->validateLocalRsync($this->taskExec('which rsync'))) {
-          $this->say(sprintf("        - This host has rsync installed"));
+    $this->say("############### Configuration summary ###############");
+    $projects = Configuration::get()->getProjects();
+    /** @var \EauDeWeb\Backup\Configuration\Project $project */
+    foreach($projects as $id => $project) {
+      $this->say("    Project: ${id}");
+      $dbServers = $project->getMySQLServers();
+      $this->say("        MySQL databases:");
+      /** @var  \EauDeWeb\Backup\Configuration\MySQLServer $server */
+      foreach ($dbServers as $k => $server) {
+        $this->say(sprintf("            - {$k} (%s@%s)", $server->user(), $server->host()));
+        if ($server->validateConnection()) {
+          $this->say(sprintf("            - Connected successfully (mysqli loaded)"));
         }
         else {
-          $this->yell(sprintf("       - This host is missing rsync command"), NULL, 'red');
+          $this->yell(sprintf("            - Cannot connect"), NULL, 'red');
         }
-        if ($task->validateConnection($this->taskSshExec($task->host(), $task->user()))) {
-          $this->say(sprintf("        - Connected successfully (%s@%s:%d), target has rsync", $task->user(), $task->host(), $task->port()));
+        $this->say(sprintf("            - Backup to %s", $server->backupDestination()));
+        if ($server->validateBackupWritable()) {
+          $this->say(sprintf("            - Backup writable: YES"));
         }
         else {
-          $this->yell(sprintf("       - Unsuitable server: (%s@%s:%d)  - host unreachable or does not have rsync installed)", $task->user(), $task->host(), $task->port()), NULL, 'red');
+          $this->yell(sprintf("            - Backup writable: NO"), NULL, 'red');
+        }
+        $databases = $server->databasesToBackup();
+        $this->say(sprintf("            - Backup databases: [%s]", implode(', ', $databases)));
+      }
+
+      // Rsync tasks
+      $rsyncTasks = $project->getRsyncTasks();
+      if (!empty($rsyncTasks)) {
+        $this->say("        Rsync tasks:");
+        /** @var \EauDeWeb\Backup\Configuration\Rsync $task */
+        foreach ($rsyncTasks as $task) {
+          if ($task->validateLocalRsync($this->taskExec('which rsync'))) {
+            $this->say(sprintf("            - This host has rsync installed"));
+          }
+          else {
+            $this->yell(sprintf("            - This host is missing rsync command"), NULL, 'red');
+          }
+          if ($task->validateConnection($this->taskSshExec($task->host(), $task->user()))) {
+            $this->say(sprintf("            - Connected successfully (%s@%s:%d), target has rsync", $task->user(), $task->host(), $task->port()));
+          }
+          else {
+            $this->yell(sprintf("       - Unsuitable server: (%s@%s:%d)  - host unreachable or does not have rsync installed)", $task->user(), $task->host(), $task->port()), NULL, 'red');
+          }
         }
       }
     }
-  }
-
-  /**
-   * Prepare backups (i.e. MySQL dump destination folders, archives etc.)
-   * @command backup:prepare
-   * @throws \Exception
-   *   When something went wrong.
-   */
-  public function prepare() {
-    $dbServers = Configuration::get()->getMySQLServers();
-    /** @var \EauDeWeb\Backup\Configuration\MySQLServer $server */
-    foreach ($dbServers as $k => $server) {
-      #$this->say("[MySQL] Running prepare for: {$k}");
-      $server->prepare();
-    }
-    $this->say("Preparation done.");
   }
 
   /**
@@ -106,68 +94,68 @@ class RoboFile extends \Robo\Tasks {
     }
 
     $projects = Configuration::get()->getProjects();
-
-    return;
-    // MySQL-related tasks
-    $dbServers = Configuration::get()->getMySQLServers();
-    /** @var \EauDeWeb\Backup\Configuration\MySQLServer $server */
-    foreach ($dbServers as $k => $server) {
-      $log->info("[MySQL][{$k}] Starting backup process for {$server->user()}@{$server->host()}");
-      $log->info("[MySQL][{$k}] Preparing backups");
-      $databases = $server->databasesToBackup();
-      if (empty($databases)) {
-        $log->warning("[MySQL][{$k}] Warning, no databases selected for backup!");
-      }
-      $server->prepare();
-      foreach ($databases as $database) {
-        try {
-          $log->info("[MySQL][{$k}][{$database}] Dumping database");
-          $mysql = $this->taskMySQLDump($database, $server->backupDestination());
-          #$mysql->setLogger($log);
-          $mysql->host($server->host())
-            ->port($server->port())
-            ->user($server->user())
-            ->password($server->password())
-            ->gzip($server->gzip())
-            ->socket($server->socket())
-            ->run();
-        } catch (\Exception $e) {
-          $log->error("[MySQL] Backup failed for: {$k} ({$e->getMessage()})");
+    /** @var \EauDeWeb\Backup\Configuration\Project $project */
+    foreach($projects as $id => $project) {
+      // MySQL-related tasks
+      $dbServers = $project->getMySQLServers();
+      /** @var \EauDeWeb\Backup\Configuration\MySQLServer $server */
+      foreach ($dbServers as $k => $server) {
+        $log->info("[MySQL][{$k}] Starting backup process for {$server->user()}@{$server->host()}");
+        $log->info("[MySQL][{$k}] Preparing backups");
+        $databases = $server->databasesToBackup();
+        if (empty($databases)) {
+          $log->warning("[MySQL][{$k}] Warning, no databases selected for backup!");
+        }
+        $server->prepare();
+        foreach ($databases as $database) {
+          try {
+            $log->info("[MySQL][{$k}][{$database}] Dumping database");
+            $mysql = $this->taskMySQLDump($database, $server->backupDestination());
+            $mysql->host($server->host())
+              ->port($server->port())
+              ->user($server->user())
+              ->password($server->password())
+              ->gzip($server->gzip())
+              ->socket($server->socket())
+              ->run();
+          } catch (\Exception $e) {
+            $log->error("[MySQL] Backup failed for: {$k} ({$e->getMessage()})");
+          }
         }
       }
+
+      // Rsync tasks
+      $rsyncTasks = $project->getRsyncTasks();
+      /** @var \EauDeWeb\Backup\Configuration\Rsync $task */
+      foreach ($rsyncTasks as $k => $task) {
+        $log->info("[Rsync][{$k}] Starting rsync process for {$task->user()}@{$task->host()}");
+        $log->info("[Rsync][{$k}]     Source: {$task->from()}");
+        $log->info("[Rsync][{$k}]     Destination: {$task->user()}@{$task->host()}:{$task->to()}");
+        $rsync = $this->taskRsync();
+        $rsync->setLogger($log);
+        $rsync->fromPath($task->from())
+          ->toHost($task->host())
+          ->toUser($task->user())
+          ->toPath($task->to())
+          #->checksum()
+          #->wholeFile()
+          ->recursive()
+          ->delete()
+          ->verbose()
+          ->progress()
+          ->humanReadable()
+          ->stats()
+          ->excludeVcs()
+          ->option('--rsync-path', 'rsync --fake-super', '=')
+          ->run();
+      }
     }
 
-    // Rsync tasks
-    $rsyncTasks = Configuration::get()->getRsyncTasks();
-    /** @var \EauDeWeb\Backup\Configuration\Rsync $task */
-    foreach ($rsyncTasks as $k => $task) {
-      $log->info("[Rsync][{$k}] Starting rsync process for {$task->user()}@{$task->host()}");
-      $log->info("[Rsync][{$k}]     Source: {$task->from()}");
-      $log->info("[Rsync][{$k}]     Destination: {$task->user()}@{$task->host()}:{$task->to()}");
-      $rsync = $this->taskRsync();
-      $rsync->setLogger($log);
-      $rsync->fromPath($task->from())
-        ->toHost($task->host())
-        ->toUser($task->user())
-        ->toPath($task->to())
-        #->checksum()
-        #->wholeFile()
-        ->recursive()
-        ->delete()
-        ->verbose()
-        ->progress()
-        ->humanReadable()
-        ->stats()
-        ->excludeVcs()
-        ->option('--rsync-path', 'rsync --fake-super', '=')
-        ->run();
+    if ($email = Configuration::get()->getDefaultEmail()) {
+      $subject = $email->subjectSuccess();
+      $message = $email->createEmailBackupReport($subject, $log->getLogFilePath(), 'This is a default body');
+      $message->send();
     }
-
-    $email = Configuration::get()->getEmail();
-    $subject = $email->subjectSuccess();
-    $message = $email->createMessage($subject, '-- Your faithful servant', $subject);
-    $message->addAttachment($log->getLogFilePath());
-    $message->send();
   }
 
   /**
@@ -178,8 +166,8 @@ class RoboFile extends \Robo\Tasks {
    */
   public function dummy() {
     /** @var \EauDeWeb\Backup\Configuration\Email $email */
-    $email = Configuration::get()->getEmail();
-    $message = $email->createMessage('TEST', 'test1122');
+    $email = Configuration::get()->getDefaultEmail();
+    $message = $email->createEmailBackupReport('TEST', '/var/log/aptitude', 'This is a default body');
     $message->send();
   }
 
