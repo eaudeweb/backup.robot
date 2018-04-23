@@ -21,7 +21,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "EauDeWeb\\": "./src/EauDeWeb/"
+            "EauDeWeb\\": "./src/EauDeWeb/",
+            "Tests\\": "./tests/"
         }
     }
 }

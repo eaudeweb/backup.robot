@@ -29,7 +29,8 @@ class RoboFile extends \Robo\Tasks {
   public function status() {
     $this->say(sprintf("Backup rObOt v.%s - Crafted with ♥ at www.eaudeweb.ro", self::VERSION));
     $this->say("############### Configuration summary ###############");
-    $projects = Configuration::get()->getProjects();
+    $config = Configuration::create(\Robo\Robo::config()->get('backup'));
+    $projects = $config->getProjects();
     /** @var \EauDeWeb\Backup\Configuration\Project $project */
     foreach($projects as $id => $project) {
       $this->say("    Project: ${id}");
@@ -92,8 +93,9 @@ class RoboFile extends \Robo\Tasks {
     if (function_exists('pcntl_signal')) {
       pcntl_signal(SIGINT, [self::class, 'shutdown']);
     }
+    $config = Configuration::create(\Robo\Robo::config()->get('backup'));
+    $projects = $config->getProjects();
 
-    $projects = Configuration::get()->getProjects();
     /** @var \EauDeWeb\Backup\Configuration\Project $project */
     foreach($projects as $id => $project) {
       // MySQL-related tasks
@@ -151,7 +153,7 @@ class RoboFile extends \Robo\Tasks {
       }
     }
 
-    if ($email = Configuration::get()->getDefaultEmail()) {
+    if ($email = $config->getDefaultEmail()) {
       $subject = $email->subjectSuccess();
       $message = $email->createEmailBackupReport($subject, $log->getLogFilePath(), 'This is a default body');
       $message->send();
@@ -165,8 +167,10 @@ class RoboFile extends \Robo\Tasks {
    *   When something went wrong.
    */
   public function dummy() {
+    $config = Configuration::create(\Robo\Robo::config()->get('backup'));
+
     /** @var \EauDeWeb\Backup\Configuration\Email $email */
-    $email = Configuration::get()->getDefaultEmail();
+    $email = $config->getDefaultEmail();
     $message = $email->createEmailBackupReport('TEST', '/var/log/aptitude', 'This is a default body');
     $message->send();
   }

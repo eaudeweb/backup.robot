@@ -5,11 +5,11 @@ namespace EauDeWeb\Backup\Configuration;
 class Project {
 
   public $id;
-  public static $config;
+  public $config;
 
   public function __construct($id, $config) {
     $this->id = $id;
-    self::$config = $config;
+    $this->config = $config;
   }
 
   /**
@@ -19,8 +19,8 @@ class Project {
    */
   public function getMySQLServers() {
     $ret = [];
-    if (!empty(self::$config['mysql'])) {
-      if ($rows = self::$config['mysql']) {
+    if (!empty($this->config['mysql'])) {
+      if ($rows = $this->config['mysql']) {
         foreach ($rows as $id => $conf) {
           $server = MySQLServer::create(['id' => $id] + $conf);
           $ret[$id] = $server;
@@ -37,8 +37,8 @@ class Project {
    */
   public function getRsyncTasks() {
     $ret = [];
-    if (!empty(self::$config['rsync'])) {
-      if ($rows = self::$config['rsync']) {
+    if (!empty($this->config['rsync'])) {
+      if ($rows = $this->config['rsync']) {
         foreach ($rows as $id => $conf) {
           $server = Rsync::create(['id' => $id] + $conf);
           $ret[$id] = $server;

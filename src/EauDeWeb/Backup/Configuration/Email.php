@@ -38,7 +38,7 @@ class Email {
    * @return bool
    */
   public function isEnabled() {
-    return !empty($this->config['enabled']) ? $this->config['enabled'] : false;
+    return isset($this->config['enabled']) ? $this->config['enabled'] : false;
   }
 
   /**
@@ -138,12 +138,8 @@ class Email {
   }
 
   public function subjectFail() {
-    $arr = $this->config('fail');
+    $arr = $this->config('subject');
     return !empty($arr['fail']) ? $arr['fail'] : null;
-  }
-
-  public function server() {
-    return $this->config('server');
   }
 
   public function serverDebugLevel() {
@@ -173,7 +169,7 @@ class Email {
 
   public function serverAuthenticate() {
     $arr = $this->config('server');
-    return !empty($arr['auth']) ? $arr['auth'] : null;
+    return isset($arr['auth']) ? $arr['auth'] : null;
   }
 
   public function serverUsername() {
@@ -200,8 +196,8 @@ class Email {
 
   public function attachmentCompress() {
     $ret = true;
-    if (isset($this->config['attachment-threshold'])) {
-      $ret = $this->config['attachment-threshold'];
+    if (isset($this->config['attachment-compress'])) {
+      $ret = $this->config['attachment-compress'];
     }
     return $ret;
   }

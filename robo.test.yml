@@ -1,0 +1,57 @@
+backup:
+  version: "1.0"
+  defaults:
+      timezone: 'Europe/Bucharest'
+      email:
+        enabled: true # Enable sending emails, globally
+        per-project: false; # Send emails for each backup project or only one global email with all tasks.
+        attachment-threshold: 3MB # If the log file is greater than this size it will be attached to email instead.
+        attachment-compress: true
+        server:
+          debug-level: 2 # 0 - no output (for production), 1 - client messages, 2 - client + server messages
+          type: smtp # or 'mail' or 'sendmail' or 'qmail'
+          host: mail.company.com
+          port: 465
+          protocol: ssl # 'false' or 'ssl' (deprecated)
+          auth: true
+          username: backup
+          password: secret
+        from: backup@company.com
+        to: destination.email@company.com
+        subject:
+          success: "[OK][SERVER-PROD01] Backup success"
+          fail: "[FAIL][SERVER-PROD01] Backup failed"
+  projects:
+    project1:
+      mysql:
+        server1:
+          host: silo1.company.com
+          port: 3306
+          user: root1
+          password: pass1
+          destination: /tmp/backup-robot-test/test/silo1/
+          gzip: true
+          blacklist: ["performance_schema", "information_schema", "db1"]
+        server2:
+          host: silo2.company.com
+          port: 1306
+          user: root2
+          password: pass2
+          destination: /tmp/backup-robot-test/test/silo2/
+          gzip: false
+          blacklist: ["performance_schema", "information_schema"]
+      rsync:
+        mysql-dumps:
+          from: /tmp/backup-robot-test/test/databases/
+          to: /backups/PROJECT1/databases
+          user: bofh
+          host: backup-push-storage.company.com
+          port: 2279
+    project2:
+      rsync:
+        mysql-dumps:
+          from: /tmp/backup-robot-test/test/databases/
+          to: /backups/PROJECT1/databases
+          user: root
+          host: dorel
+          port: 22

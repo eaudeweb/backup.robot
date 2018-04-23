@@ -10,20 +10,31 @@ namespace EauDeWeb\Backup\Configuration;
 class Configuration {
 
   private static $instance = null;
+  protected static $config;
+
+  public function __construct($array) {
+    self::$config = $array;
+  }
 
   /**
    * @return \EauDeWeb\Backup\Configuration\Configuration|null
    */
+  public static function create(array $array) {
+    self::$instance = new Configuration($array);
+    return self::$instance;
+  }
+
+  /**
+   * @return \EauDeWeb\Backup\Configuration\Configuration
+   */
   public static function get() {
-    if (empty(self::$instance)) {
-      self::$instance = new Configuration();
-    }
     return self::$instance;
   }
 
   public function getProjects() {
     $ret = [];
-    if ($rows = \Robo\Robo::config()->get('backup.projects')) {
+    if (!empty(self::$config['projects'])
+        && $rows = self::$config['projects']) {
       foreach ($rows as $id => $config) {
         $ret[$id] = new Project($id, $config);
       }
@@ -33,12 +44,10 @@ class Configuration {
 
   public function getDefaultEmail() {
     $ret = null;
-    if (\Robo\Robo::config()
-        ->get('defaults.email') == TRUE
-        && $config = \Robo\Robo::config()->get('defaults.email')) {
+    if (!empty(self::$config['defaults']['email'])
+        && $config = self::$config['defaults']['email']) {
       $ret = Email::create($config);
     }
     return $ret;
   }
-
 }

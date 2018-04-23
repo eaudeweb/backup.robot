@@ -6,6 +6,12 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Psr\Log\AbstractLogger;
 
+/**
+ * Class BackupLogger
+ *
+ * @package EauDeWeb\Backup\Configuration
+ * @codeCoverageIgnore
+ */
 class BackupLogger extends AbstractLogger {
 
   private static $instance = null;

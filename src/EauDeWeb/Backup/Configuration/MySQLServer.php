@@ -29,24 +29,20 @@ class MySQLServer {
   }
 
   public function validateConnection() {
+    $ret = false;
     if ($this->validateMysqliExtension()) {
-      $ret = FALSE;
-      try {
-        if ($conn = $this->connect()) {
-          @mysqli_close($conn);
-        }
-        $ret = !empty($conn);
-      } catch (\Exception $e) {
+      if ($conn = $this->connect()) {
+        @mysqli_close($conn);
       }
+      $ret = !empty($conn);
     }
     return $ret;
   }
 
   public function connect() {
-    $conn = null;
     $conn = @mysqli_connect($this->host(), $this->user(), $this->password(), NULL, $this->port());
-    if (mysqli_connect_errno()) {
-      \Robo\Robo::logger()->critical(mysqli_connect_error());
+    if (@mysqli_connect_errno()) {
+      \Robo\Robo::logger()->critical(@mysqli_connect_error());
     }
     return $conn;
   }
@@ -85,7 +81,8 @@ class MySQLServer {
   }
 
   public function socket() {
-    return $this->config('socket');
+    // return $this->config('socket');
+    throw new \Exception('Not implemented');
   }
 
   public function blacklist() {
@@ -97,7 +94,7 @@ class MySQLServer {
   }
 
   public function config($name) {
-    return !empty($this->config[$name]) ? $this->config[$name] : null;
+    return isset($this->config[$name]) ? $this->config[$name] : null;
   }
 
   /**
