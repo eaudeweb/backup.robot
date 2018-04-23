@@ -91,6 +91,7 @@ class RoboFile extends \Robo\Tasks {
   public function backup() {
     $status = true;
     $log = BackupLogger::get();
+    $app = Robo::application();
     $this->say(sprintf("🤖 %s v.%s - Crafted with ♥ at www.eaudeweb.ro", $app->getName(), $app->getVersion()));
     $log->debug("Registering shutdown hook");
     register_shutdown_function([self::class, 'shutdown']);

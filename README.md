@@ -19,6 +19,7 @@ Install on a target server the following components:
 1. Checkout this project on a target server (i.e. `git clone https://github.com/eaudeweb/backup.robot.git /opt/backup`) with a regular user account
 2. Copy `robo.test.yml` to `robo.yml` and restrict file permissions (i.e. `chown root:root robo.yml && chmod 600 robo.yml`)
 3. Customize configuration as stated in the next chapter.
+4. Run `composer install --no-dev` to setup the libraries
 4. Start a backup using command: `./run.php backup:backup`
 5. Install a CRON job (TODO) - `backup.sh`
 
