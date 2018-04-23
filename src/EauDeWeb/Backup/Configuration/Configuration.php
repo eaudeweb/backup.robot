@@ -21,6 +21,17 @@ class Configuration {
     return self::$instance;
   }
 
+  public function getProjects() {
+    $ret = [];
+    if ($projects = \Robo\Robo::config()->get('backup.projects')) {
+      foreach ($projects as $name => $config) {
+        var_dump($config);
+      }
+
+    }
+    return $ret;
+  }
+
   /**
    * Retrieve the configured MySQL servers to backup.
    *

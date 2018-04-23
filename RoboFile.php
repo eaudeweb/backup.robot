@@ -105,6 +105,9 @@ class RoboFile extends \Robo\Tasks {
       pcntl_signal(SIGINT, [self::class, 'shutdown']);
     }
 
+    $projects = Configuration::get()->getProjects();
+
+    return;
     // MySQL-related tasks
     $dbServers = Configuration::get()->getMySQLServers();
     /** @var \EauDeWeb\Backup\Configuration\MySQLServer $server */
