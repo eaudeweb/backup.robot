@@ -17,7 +17,7 @@ Install on a target server the following components:
 ## Setup
 
 1. Checkout this project on a target server (i.e. `git clone https://github.com/eaudeweb/backup.robot.git /opt/backup`) with a regular user account
-2. Copy `robo.example.yml` to `robo.yml` and restrict file permissions (i.e. `chown root:root robo.yml && chmod 600 robo.yml`)
+2. Copy `robo.test.yml` to `robo.yml` and restrict file permissions (i.e. `chown root:root robo.yml && chmod 600 robo.yml`)
 3. Customize configuration as stated in the next chapter.
 4. Start a backup using command: `./vendor/bin/robo backup:backup`
 5. Install a CRON job (TODO) - `backup.sh`
@@ -30,77 +30,51 @@ Install on a target server the following components:
 
 ## Configuration
 
-Configuration is done in `robo.yml` file and is quite simple:
+Configuration is done in `robo.yml` file and is quite simple. You can define one or more backup projects (for simple deployments one project should be enough). A project consists of a set of actions per project. 
+For example dump databases, rsync everything to a target server then send me an email report. The configuration to do this is the following: 
 
-### MySQL dump configuration
-
-You can specify several MySQL servers at once - if needed. The dumps will be done on local filesystem.
-
-```yml
+```
 backup:
   version: "1.0"
-  mysql:
-    host1:
-      type:
-      host: 127.0.0.1
-      port: 3306
-      user: root
-      password: secret
-      destination: /path/to/dumps/host1/
-      gzip: true
-      blacklist: ["performance_schema", "information_schema"]
-    host2:
-      type:
-      host: 127.0.0.1
-      port: 1306
-      user: root
-      password: secret
-      destination: /path/to/dumps/host2/
-      gzip: true
-      blacklist: ["performance_schema", "information_schema", "project_test"]
-```
-
-### Rsync configuration
-
-You can specify several rsync jobs by declaring them under `rsync` key.
-
-```yml
-backup:
-  version: "1.0"
-  rsync:
-    dir1:
-      from: /path/to/source/folder1/ending/in/slash/
-      to: /path/to/destination/dest1/
-      user: john
-      host: backup.company.com
-    dir2:
-      from: /path/to/source/folder2/ending/in/slash/
-      to: /path/to/destination/dest2/
-      user: john
-      host: backup.company.com
-```
-
-### Email configuration
-
-The `email` configuration section can be set to send an email report. The underlying library is PHPMailer. Customize
-the `subject.success` and `subject.fail` to receive and customized email message.
-
-```
-  email:
-    server:
-      debug-level: 0 # 0 - no output (for production), 1 - client messages, 2 - client + server messages
-      type: smtp # or 'mail' or 'sendmail' or 'qmail'
-      host: secure.emailserver.com
-      port: 465
-      protocol: tls # or 'ssl' (deprecated)
-      auth: true
-      username: email@compay.com
-      password: secret
-    from: backup@company.com
-    to: sysadmin@company.com
-    subject:
-      success: "[OK][SERVER-PROD01] Backup success"
-      fail: "[OK][SERVER-PROD01] Backup failed"
+  defaults:
+    timezone: 'Europe/Bucharest'
+    email:
+      enabled: true # Enable sending emails, globally
+      per-project: false; # Send emails for each backup project or only one global email with all tasks.
+      attachment-threshold: 3MB # If the log file is greater than this size it will be attached to email instead.
+      attachment-compress: true
+      server:
+        debug-level: 2 # 0 - no output (for production), 1 - client messages, 2 - client + server messages
+        type: smtp # or 'mail' or 'sendmail' or 'qmail'
+        host: mail.company.com
+        port: 465 # other ports: 25, 587
+        protocol: ssl # 'false' or 'ssl' (deprecated)
+        auth: true # use authentication
+        username: backup
+        password: secret
+      from: backup@company.com
+      to: destination.email@company.com
+      subject:
+        success: "[OK][SERVER-PROD01] Backup success"
+        fail: "[FAIL][SERVER-PROD01] Backup failed"
+  projects:
+    project1:
+      mysql:
+        server1:
+          host: silo1.company.com
+          port: 3306
+          user: root1
+          password: pass1
+          destination: /tmp/backup-robot-test/test/silo1/
+          gzip: true
+          blacklist: ["performance_schema", "information_schema", "db1"]
+      rsync:
+        mysql-dumps:
+          from: /tmp/backup-robot-test/test/databases/
+          to: /backups/PROJECT1/databases
+          user: bofh
+          host: backup-push-storage.company.com
+          port: 2279
 ```
 
 ## Useful commands
