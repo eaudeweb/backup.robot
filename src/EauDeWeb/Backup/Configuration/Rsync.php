@@ -28,8 +28,14 @@ class Rsync {
     return true;
   }
 
+  /**
+   * @param \Robo\Task\Base\Exec $runner
+   *
+   * @return bool
+   */
   public function validateLocalRsync($runner) {
     /** @var \Robo\Result $result */
+    $runner->silent(true);
     $result = $runner->run();
     if ($result->getExitCode() === 0) {
       return true;
@@ -43,8 +49,9 @@ class Rsync {
    * @return bool
    */
   public function validateConnection($runner) {
+    $runner->silent(true);
     /** @var \Robo\Result $result */
-    $result = $runner->quiet()->port($this->port())->exec('which rsync')->run();
+    $result = $runner->port($this->port())->exec('which rsync')->run();
     if ($result->getExitCode() === 0) {
       return true;
     }

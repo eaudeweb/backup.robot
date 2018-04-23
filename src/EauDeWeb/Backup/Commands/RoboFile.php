@@ -1,6 +1,10 @@
 <?php
 
+namespace EauDeWeb\Backup\Commands;
+
+use EauDeWeb\Backup\Configuration\BackupLogger;
 use EauDeWeb\Backup\Configuration\Configuration;
+use Robo\Robo;
 
 /**
  * This is project's console commands configuration for Robo task runner.
@@ -9,7 +13,7 @@ use EauDeWeb\Backup\Configuration\Configuration;
  */
 class RoboFile extends \Robo\Tasks {
 
-  use EauDeWeb\Backup\Robo\Task\MySql\loadTasks;
+  use \EauDeWeb\Backup\Robo\Task\MySql\loadTasks;
 
   /** This backup.robot release version */
   const VERSION = "0.0.1";
@@ -27,7 +31,7 @@ class RoboFile extends \Robo\Tasks {
    *   When trying to initialize the backup framework
    */
   public function status() {
-    $this->say(sprintf("Backup rObOt v.%s - Crafted with ♥ at www.eaudeweb.ro", self::VERSION));
+    $this->say(sprintf("🤖 Backup rObOt v.%s - Crafted with ♥ at www.eaudeweb.ro", self::VERSION));
     $this->say("############### Configuration summary ###############");
     $config = Configuration::create(\Robo\Robo::config()->get('backup'));
     $projects = $config->getProjects();
@@ -87,7 +91,7 @@ class RoboFile extends \Robo\Tasks {
    *   When the configuration fails.
    */
   public function backup() {
-    $log = \EauDeWeb\Backup\Configuration\BackupLogger::get();
+    $log = BackupLogger::get();
     $log->debug("Registering shutdown hook");
     register_shutdown_function([self::class, 'shutdown']);
     if (function_exists('pcntl_signal')) {
@@ -98,6 +102,7 @@ class RoboFile extends \Robo\Tasks {
 
     /** @var \EauDeWeb\Backup\Configuration\Project $project */
     foreach($projects as $id => $project) {
+      $log->info("Processing project: {$id}");
       // MySQL-related tasks
       $dbServers = $project->getMySQLServers();
       /** @var \EauDeWeb\Backup\Configuration\MySQLServer $server */
@@ -113,7 +118,8 @@ class RoboFile extends \Robo\Tasks {
           try {
             $log->info("[MySQL][{$k}][{$database}] Dumping database");
             $mysql = $this->taskMySQLDump($database, $server->backupDestination());
-            $mysql->host($server->host())
+            /** @var \Robo\Result $result */
+            $result = $mysql->host($server->host())
               ->port($server->port())
               ->user($server->user())
               ->password($server->password())

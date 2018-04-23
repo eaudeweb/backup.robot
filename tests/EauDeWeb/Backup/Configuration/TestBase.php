@@ -29,7 +29,7 @@ class TestBase extends TestCase implements ContainerAwareInterface {
     $input = new StringInput('');
     $container = Robo::createDefaultContainer($input, new NullOutput(), NULL, $config);
     $this->setContainer($container);
-    $this->config = Configuration::create(\Robo\Robo::config()->get('backup'));
+    $this->config = Configuration::create(Robo::config()->get('backup'));
   }
 
   public function testConfiguration() {
