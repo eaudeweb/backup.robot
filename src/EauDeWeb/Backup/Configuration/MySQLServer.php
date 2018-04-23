@@ -80,9 +80,12 @@ class MySQLServer {
     return $this->config('gzip');
   }
 
+  /**
+   * @todo Not implemented.s
+   * @return null
+   */
   public function socket() {
-    // return $this->config('socket');
-    throw new \Exception('Not implemented');
+    return $this->config('socket');
   }
 
   public function blacklist() {

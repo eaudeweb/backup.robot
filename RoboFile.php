@@ -15,7 +15,7 @@ class RoboFile extends \Robo\Tasks {
   const VERSION = "0.0.1";
 
   public function __construct() {
-    $tz = \Robo\Robo::config()->get('timezone');
+    $tz = \Robo\Robo::config()->get('backup.defaults.timezone');
     date_default_timezone_set($tz);
   }
 
