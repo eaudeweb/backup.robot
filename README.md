@@ -101,3 +101,13 @@ $> ./run.php backup:status
 ```
 $> ./run.php backup:backup
 ```
+
+## Development
+
+Create a database test container:
+
+```
+docker run --name db -e MYSQL_ROOT_PASSWORD=root -d mariadb:latest --rm --expose="127.0.0.1:3306:3306"
+```
+
+Configure robo.yml with the details to connect to this container and backup the databases.
