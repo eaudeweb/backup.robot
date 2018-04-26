@@ -128,7 +128,6 @@ class RoboFile extends \Robo\Tasks {
             $mysql = $this->taskMySQLDump($database, $server->backupDestination());
             /** @var \Robo\Result $result */
             $result = $mysql->host($server->host())
-              ->silent(true)
               ->port($server->port())
               ->user($server->user())
               ->password($server->password())
@@ -156,7 +155,6 @@ class RoboFile extends \Robo\Tasks {
         $log->info("[Rsync][{$k}]    Destination: {$task->user()}@{$task->host()}:{$task->to()}");
         $rsync = $this->taskRsync();
         $result = $rsync->fromPath($task->from())
-          ->silent(true)
           ->option('-e', 'ssh -p ' . $task->port())
           ->option('--no-specials')
           ->option('--no-devices')
