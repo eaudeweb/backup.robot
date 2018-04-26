@@ -2,3 +2,4 @@ vendor
 .idea
 robo.yml
 logs/*.log
+reports/coverage
