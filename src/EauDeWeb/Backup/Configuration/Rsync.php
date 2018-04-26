@@ -81,4 +81,8 @@ class Rsync {
   public function port() {
     return $this->config('port');
   }
+
+  public function fakeSuper() {
+    return $this->config('fake-super');
+  }
 }

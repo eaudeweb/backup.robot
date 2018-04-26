@@ -47,6 +47,7 @@ backup:
           user: bofh
           host: backup-push-storage.company.com
           port: 2279
+          fake-super: true
     project2:
       rsync:
         mysql-dumps:
@@ -55,3 +56,4 @@ backup:
           user: root
           host: dorel
           port: 22
+          fake-super: false # Preserve extended xattrs

@@ -154,6 +154,9 @@ class RoboFile extends \Robo\Tasks {
         $log->info("[Rsync][{$k}]    Source: {$task->from()}");
         $log->info("[Rsync][{$k}]    Destination: {$task->user()}@{$task->host()}:{$task->to()}");
         $rsync = $this->taskRsync();
+        if ($task->fakeSuper()) {
+          $rsync->option('--rsync-path', 'rsync --fake-super', '=');
+        }
         $result = $rsync->fromPath($task->from())
           ->option('-e', 'ssh -p ' . $task->port())
           ->option('--no-specials')
@@ -170,7 +173,6 @@ class RoboFile extends \Robo\Tasks {
           ->humanReadable()
           ->stats()
           ->excludeVcs()
-          ->option('--rsync-path', 'rsync --fake-super', '=')
           ->run();
         #$o = Robo::getContainer()->get('output');
         #$o->fetch();
