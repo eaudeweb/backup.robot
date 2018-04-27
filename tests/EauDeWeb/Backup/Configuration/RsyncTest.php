@@ -13,17 +13,21 @@ class RsyncTest extends TestBase {
 
   /** @var \EauDeWeb\Backup\Configuration\Rsync */
   private $task1 = null;
+  /** @var \EauDeWeb\Backup\Configuration\Rsync */
+  private $task2 = null;
 
   public function setUp() {
     parent::setUp();
     $projects = $this->config->getProjects();
     /** @var \EauDeWeb\Backup\Configuration\Project $p1 */
     $p1 = $projects['project1'];
-    $this->task1 = $p1->getRsyncTasks()['mysql-dumps'];
+    $this->task1 = $p1->getRsyncTasks()['full'];
+    $this->task2 = $p1->getRsyncTasks()['defaults'];
   }
 
   public function testPort() {
     $this->assertEquals('2279', $this->task1->port());
+    $this->assertEquals('22', $this->task2->port());
   }
 
   // public function testValidate() {
@@ -56,6 +60,11 @@ class RsyncTest extends TestBase {
 
   public function testUser() {
     $this->assertEquals('bofh', $this->task1->user());
+  }
+
+  public function testFakeSuper() {
+    $this->assertTrue($this->task1->fakeSuper());
+    $this->assertFalse($this->task2->fakeSuper());
   }
 
   // public function testValidateLocalRsync() {

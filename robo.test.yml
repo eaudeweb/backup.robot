@@ -44,13 +44,18 @@ backup:
           password: pass2
           destination: /tmp/backup-robot-test/test/silo2/
       rsync:
-        mysql-dumps:
+        full:
           from: /tmp/backup-robot-test/test/databases/
           to: /backups/PROJECT1/databases
           user: bofh
           host: backup-push-storage.company.com
           port: 2279
-          fake-super: true
+          fake-super: true # Preserve extended xattrs
+        defaults:
+          from: /tmp/backup-robot-test/test/databases/
+          to: /backups/PROJECT1/databases
+          user: root
+          host: dorel
     project2:
       rsync:
         mysql-dumps:
@@ -59,4 +64,3 @@ backup:
           user: root
           host: dorel
           port: 22
-          fake-super: false # Preserve extended xattrs

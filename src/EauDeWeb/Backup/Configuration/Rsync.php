@@ -8,7 +8,13 @@ class Rsync {
   public $config;
 
   public function __construct($config) {
-    $this->config = $config;
+    $this->config = array_merge(
+      array(
+        'port' => 22,
+        'fake-super' => false
+      ),
+      $config
+    );
   }
 
   /**
@@ -59,7 +65,7 @@ class Rsync {
   }
 
   public function config($name) {
-    return !empty($this->config[$name]) ? $this->config[$name] : null;
+    return isset($this->config[$name]) ? $this->config[$name] : null;
   }
 
   public function from() {

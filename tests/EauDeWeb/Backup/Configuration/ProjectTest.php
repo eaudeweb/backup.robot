@@ -32,8 +32,8 @@ class ProjectTest extends TestBase {
     /** @var Project $p1 */
     $p1 = $this->projects['project1'];
     $items = $p1->getRsyncTasks();
-    $this->assertEquals(1, count($items));
-    $this->assertArrayHasKey('mysql-dumps', $items);
+    $this->assertEquals(2, count($items));
+    $this->assertArrayHasKey('full', $items);
   }
 
 }
