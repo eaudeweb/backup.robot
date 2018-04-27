@@ -9,7 +9,15 @@ class MySQLServer {
   public $config;
 
   public function __construct($config) {
-    $this->config = array_merge(array('id' => 'Unknown', 'host' => '127.0.0.1', 'port' => 3306), $config);
+    $this->config = array_merge(
+      array(
+        'user' => 'root',
+        'host' => '127.0.0.1',
+        'port' => 3306,
+        'gzip' => true
+      ),
+      $config
+    );
   }
 
   public function validate() {

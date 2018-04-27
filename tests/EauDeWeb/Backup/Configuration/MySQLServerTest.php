@@ -10,6 +10,8 @@ class MySQLServerTest extends TestBase {
   private $srv1 = null;
   /** @var MySQLServer */
   private $srv2 = null;
+  /** @var MySQLServer */
+  private $srv3 = null;
 
   public function setUp() {
     parent::setUp();
@@ -19,6 +21,7 @@ class MySQLServerTest extends TestBase {
     $servers = $p1->getMySQLServers();
     $this->srv1 = $servers['server1'];
     $this->srv2 = $servers['server2'];
+    $this->srv3 = $servers['server3'];
   }
 
   public function testId() {
@@ -29,6 +32,7 @@ class MySQLServerTest extends TestBase {
   public function testPort() {
     $this->assertEquals(3306, $this->srv1->port());
     $this->assertEquals(1306, $this->srv2->port());
+    $this->assertEquals(3306, $this->srv3->port());
   }
 
   // public function testValidateMysqliExtension() {
@@ -82,6 +86,7 @@ class MySQLServerTest extends TestBase {
   public function testGzip() {
     $this->assertTrue($this->srv1->gzip());
     $this->assertFalse($this->srv2->gzip());
+    $this->assertTrue($this->srv3->gzip());
   }
 
   // public function testValidateBackupWritable() {
@@ -98,9 +103,5 @@ class MySQLServerTest extends TestBase {
 
   }
 
-  public function testSocket() {
-    $this->expectException(\Exception::class);
-    $this->assertNull($this->srv1->socket());
-    $this->assertNull($this->srv2->socket());
-  }
+  // public function testSocket() {}
 }

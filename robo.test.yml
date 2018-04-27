@@ -40,6 +40,9 @@ backup:
           destination: /tmp/backup-robot-test/test/silo2/
           gzip: false
           blacklist: ["performance_schema", "information_schema"]
+        server3: #defaults
+          password: pass2
+          destination: /tmp/backup-robot-test/test/silo2/
       rsync:
         mysql-dumps:
           from: /tmp/backup-robot-test/test/databases/
