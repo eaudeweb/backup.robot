@@ -24,7 +24,7 @@ Install on a target server the following components:
 5. Install a CRON job (TODO) - `backup.sh`
 
 ```
-30 2 * * * /path/to/backup.sh
+10 05 * * * root /opt/backup.robot/cron.sh 1>/dev/null 2>&1 || true
 ```
 
 **Disclaimer: The code above is not tested in production**
