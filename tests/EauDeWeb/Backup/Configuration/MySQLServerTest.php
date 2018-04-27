@@ -4,7 +4,7 @@ namespace Tests\EauDeWeb\Backup\Configuration;
 
 use EauDeWeb\Backup\Configuration\MySQLServer;
 
-class MySQLServerTest extends TestBase {
+final class MySQLServerTest extends TestBase {
 
   /** @var MySQLServer */
   private $srv1 = null;

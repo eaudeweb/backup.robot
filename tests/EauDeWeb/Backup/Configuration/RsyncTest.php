@@ -9,7 +9,7 @@
 namespace Tests\EauDeWeb\Backup\Configuration;
 
 
-class RsyncTest extends TestBase {
+final class RsyncTest extends TestBase {
 
   /** @var \EauDeWeb\Backup\Configuration\Rsync */
   private $task1 = null;

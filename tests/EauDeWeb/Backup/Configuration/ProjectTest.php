@@ -10,7 +10,7 @@ namespace Tests\EauDeWeb\Backup\Configuration;
 
 use EauDeWeb\Backup\Configuration\Project;
 
-class ProjectTest extends TestBase {
+final class ProjectTest extends TestBase {
 
   private $projects = [];
 
