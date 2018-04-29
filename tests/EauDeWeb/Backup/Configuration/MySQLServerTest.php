@@ -12,6 +12,10 @@ final class MySQLServerTest extends TestBase {
   private $srv2 = null;
   /** @var MySQLServer */
   private $srv3 = null;
+  /** @var MySQLServer */
+  private $srv4 = null;
+  /** @var MySQLServer */
+  private $srv5 = null;
 
   public function setUp() {
     parent::setUp();
@@ -22,6 +26,8 @@ final class MySQLServerTest extends TestBase {
     $this->srv1 = $servers['server1'];
     $this->srv2 = $servers['server2'];
     $this->srv3 = $servers['server3'];
+    $this->srv4 = $servers['localhost']; // Real server with database 'dodo'
+    $this->srv5 = $servers['localhost2']; // Real server with database 'dodo'
   }
 
   public function testId() {
@@ -93,13 +99,26 @@ final class MySQLServerTest extends TestBase {
   // @todo
   // }
 
-  // public function testDatabasesToBackup() {
-  // @todo
-  //}
+  public function testDatabasesToBackup() {
+    $arr = $this->srv4->databasesToBackup();
+    $this->assertTrue(in_array('dodo', $arr));
+    $this->assertFalse(in_array('mysql', $arr), 'Do not backup "mysql" database');
+
+    $arr = $this->srv5->databasesToBackup();
+    $this->assertEquals(2, count($arr));
+    $this->assertTrue(in_array('dodo', $arr));
+    $this->assertTrue(in_array('mysql', $arr));
+  }
 
   public function testBlacklist() {
     $this->assertArraySubset(["performance_schema", "information_schema", "db1"], $this->srv1->blacklist());
     $this->assertArraySubset(["performance_schema", "information_schema"], $this->srv2->blacklist());
+
+  }
+
+  public function testWhitelist() {
+    $this->assertArraySubset(["db2"], $this->srv1->whitelist());
+    $this->assertEmpty($this->srv2->whitelist());
 
   }
 

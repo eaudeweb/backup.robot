@@ -23,7 +23,7 @@ final class ProjectTest extends TestBase {
     /** @var Project $p1 */
     $p1 = $this->projects['project1'];
     $items = $p1->getMySQLServers();
-    $this->assertEquals(3, count($items));
+    $this->assertEquals(5, count($items));
     $this->assertArrayHasKey('server1', $items);
     $this->assertArrayHasKey('server2', $items);
   }

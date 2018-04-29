@@ -95,7 +95,21 @@ class MySQLServer {
   }
 
   public function blacklist() {
-    return $this->config('blacklist');
+    $ret = [];
+    $w = $this->config('blacklist');
+    if (!empty($w) && is_array($w)) {
+      $ret = $w;
+    }
+    return $ret;
+  }
+
+  public function whitelist() {
+    $ret = [];
+    $w = $this->config('whitelist');
+    if (!empty($w) && is_array($w)) {
+      $ret = $w;
+    }
+    return $ret;
   }
 
   public function backupDestination() {
@@ -122,8 +136,17 @@ class MySQLServer {
   }
 
   public function databasesToBackup() {
-    $ret = array_filter($this->databases(), function($value) {
-      return !in_array($value, $this->blacklist());
+    $whitelist = $this->whitelist();
+    if (!empty($whitelist)) {
+      $ret = array_filter($this->databases(), function($value) use ($whitelist) {
+        return in_array($value, $whitelist);
+      });
+      return $ret;
+    }
+
+    $blacklist = $this->blacklist();
+    $ret = array_filter($this->databases(), function($value) use ($blacklist) {
+      return !in_array($value, $blacklist);
     });
     return $ret;
   }
