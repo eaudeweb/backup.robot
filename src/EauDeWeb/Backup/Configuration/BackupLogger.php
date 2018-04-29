@@ -2,6 +2,7 @@
 
 namespace EauDeWeb\Backup\Configuration;
 
+use Monolog\Formatter\LineFormatter;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Psr\Log\AbstractLogger;
@@ -22,7 +23,10 @@ class BackupLogger extends AbstractLogger {
     self::$fileLogger = new Logger('backup');
     $path = realpath(__DIR__ . '/../../../../logs/');
     self::$logFile = sprintf('%s/backup.%s.log', $path, date('Ymd'));
-    self::$fileLogger->pushHandler(new StreamHandler(self::$logFile, Logger::DEBUG));
+    $file = new StreamHandler(self::$logFile, Logger::DEBUG);
+    $file->setFormatter(new LineFormatter("[%datetime%] %level_name%: %message%\n", 'H:i:s', true));
+    self::$fileLogger->pushHandler($file);
+
   }
 
   public function getLogFilePath() {

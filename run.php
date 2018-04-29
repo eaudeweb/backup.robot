@@ -13,9 +13,9 @@ if ($pharPath) {
     require_once __DIR__ . '/../../autoload.php';
   }
 }
-#$output = new \Symfony\Component\Console\Output\NullOutput();
+$output = new \Symfony\Component\Console\Output\NullOutput();
 #$output = new \Symfony\Component\Console\Output\BufferedOutput();
-$output = new \Symfony\Component\Console\Output\ConsoleOutput();
+#$output = new \Symfony\Component\Console\Output\ConsoleOutput();
 $statusCode = \Robo\Robo::run(
   $_SERVER['argv'],
   \EauDeWeb\Backup\Commands\RoboFile::class,

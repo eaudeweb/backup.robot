@@ -7,6 +7,11 @@ backup:
       per-project: false; # Send emails for each backup project or only one global email with all tasks.
       attachment-threshold: 3MB # If the log file is greater than this size it will be attached to email instead.
       attachment-compress: true
+      from: backup@company.com
+      to: destination.email@company.com
+      subject:
+        success: "[OK][SERVER-PROD01] Backup success"
+        fail: "[FAIL][SERVER-PROD01] Backup failed"
       server:
         debug-level: 2 # 0 - no output (for production), 1 - client messages, 2 - client + server messages
         type: smtp # or 'mail' or 'sendmail' or 'qmail'
@@ -16,11 +21,6 @@ backup:
         auth: true # use authentication
         username: backup
         password: secret
-      from: backup@company.com
-      to: destination.email@company.com
-      subject:
-        success: "[OK][SERVER-PROD01] Backup success"
-        fail: "[FAIL][SERVER-PROD01] Backup failed"
   projects:
     project1:
       mysql:

@@ -2,7 +2,9 @@
 
 namespace EauDeWeb\Backup\Robo\Task\MySql;
 
-class Dump extends Base {
+use Robo\Contract\CommandInterface;
+
+class Dump extends Base implements CommandInterface {
 
   protected $destination;
   protected $database;

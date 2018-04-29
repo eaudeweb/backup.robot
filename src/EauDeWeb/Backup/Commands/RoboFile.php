@@ -108,24 +108,22 @@ class RoboFile extends \Robo\Tasks {
       $dbServers = $project->getMySQLServers();
       /** @var \EauDeWeb\Backup\Configuration\MySQLServer $server */
       foreach ($dbServers as $k => $server) {
-        $log->info("[MySQL][{$k}] Starting backup process for {$server->user()}@{$server->host()}");
+        $log->info("[$id][MySQL][{$k}] Starting backup process for {$server->user()}@{$server->host()}");
         if (!$server->validate()) {
-          $log->error("[MySQL][{$k}] Server validation failed, aborting ...");
+          $log->error("[$id][MySQL][{$k}] Server validation failed, aborting ...");
           $status = false;
           continue;
         }
-        $log->info("[MySQL][{$k}] Preparing backups");
         $databases = $server->databasesToBackup();
         if (empty($databases)) {
           $status = false;
-          $log->warning("[MySQL][{$k}] Warning, no databases selected for backup!");
+          $log->warning("[$id][MySQL][{$k}] Warning, no databases selected for backup!");
         }
         $server->prepare();
         foreach ($databases as $database) {
           try {
-            $log->info("[MySQL][{$k}][{$database}] Dumping database");
             /** @var \Robo\Collection\CollectionBuilder $mysql */
-            $mysql = $this->taskMySQLDump($database, $server->backupDestination());
+            $mysql = $this->taskMySQLDump($database, $server->backupDestination())->interactive(false);
             /** @var \Robo\Result $result */
             $result = $mysql->host($server->host())
               ->port($server->port())
@@ -134,12 +132,15 @@ class RoboFile extends \Robo\Tasks {
               ->gzip($server->gzip())
               ->socket($server->socket())
               ->run();
-            #$o = Robo::getContainer()->get('output');
-            #$o->fetch();
+            $log->info("[$id][MySQL][{$k}][{$database}] {$mysql->getCommand()}");
+            $output = $result->getMessage();
+            if (!empty(trim($output))) {
+              $log->info("[$id][MySQL][{$k}][{$database}] {$output}");
+            }
             $success = $result->wasSuccessful();
             $status = $status && $success;
-            $log->info(sprintf("[MySQL][{$k}][{$database}] Execution took: %.1f seconds", $result->getExecutionTime()));
-            $log->info(sprintf("[MySQL][{$k}][{$database}] Result: %s", $success ? 'Success' : 'Failure'));
+            $log->debug(sprintf("[$id][MySQL][{$k}][{$database}] Execution took: %.1f seconds", $result->getExecutionTime()));
+            $log->info(sprintf("[$id][MySQL][{$k}][{$database}] Result: %s", $success ? 'Success' : 'Failure'));
           } catch (\Exception $e) {
             $log->error("[MySQL] Backup failed for: {$k} ({$e->getMessage()})");
           }
@@ -150,10 +151,9 @@ class RoboFile extends \Robo\Tasks {
       $rsyncTasks = $project->getRsyncTasks();
       /** @var \EauDeWeb\Backup\Configuration\Rsync $task */
       foreach ($rsyncTasks as $k => $task) {
-        $log->info("[Rsync][{$k}] Starting rsync process for {$task->user()}@{$task->host()}");
-        $log->info("[Rsync][{$k}]    Source: {$task->from()}");
-        $log->info("[Rsync][{$k}]    Destination: {$task->user()}@{$task->host()}:{$task->to()}");
-        $rsync = $this->taskRsync();
+        $log->debug("[$id][Rsync][{$k}] Source      : {$task->from()}");
+        $log->debug("[$id][Rsync][{$k}] Destination : {$task->user()}@{$task->host()}:{$task->to()}");
+        $rsync = $this->taskRsync()->interactive(false)->printOutput(false);
         if ($task->fakeSuper()) {
           $rsync->option('--rsync-path', 'rsync --fake-super', '=');
         }
@@ -174,12 +174,14 @@ class RoboFile extends \Robo\Tasks {
           ->stats()
           ->excludeVcs()
           ->run();
-        #$o = Robo::getContainer()->get('output');
-        #$o->fetch();
+        $log->info("[$id][Rsync][{$k}] {$rsync->getCommand()}");
+        if ($output = $result->getMessage()) {
+          $log->info("[$id][Rsync][{$k}] {$output}");
+        }
         $success = $result->wasSuccessful();
         $status = $status && $success;
-        $log->info(sprintf("[Rsync][{$k}]    Execution took: %.1f seconds", $result->getExecutionTime()));
-        $log->info("[Rsync][{$k}]    Result: " . ($result->wasSuccessful() ? 'Success' : 'Failure'));
+        $log->info(sprintf("[$id][Rsync][{$k}] Execution took: %.1f seconds", $result->getExecutionTime()));
+        $log->info("[$id][Rsync][{$k}] Result: " . ($result->wasSuccessful() ? 'Success' : 'Failure'));
       }
     }
 
