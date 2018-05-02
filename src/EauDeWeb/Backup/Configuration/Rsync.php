@@ -41,7 +41,7 @@ class Rsync {
    */
   public function validateLocalRsync($runner) {
     /** @var \Robo\Result $result */
-    $runner->silent(true);
+    $runner->silent(true)->timeout(2);
     $result = $runner->run();
     if ($result->getExitCode() === 0) {
       return true;

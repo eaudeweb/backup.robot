@@ -29,52 +29,63 @@ class RoboFile extends \Robo\Tasks {
    */
   public function status() {
     $app = Robo::application();
-    $this->say(sprintf("🤖 %s v.%s - Crafted with ♥ at www.eaudeweb.ro", $app->getName(), $app->getVersion()));
-    $this->say("############### Configuration summary ###############");
+    $log = BackupLogger::statusLogger();
+    $log->debug(sprintf("🤖  %s v.%s - Crafted with ♥ at www.eaudeweb.ro", $app->getName(), $app->getVersion()));
+    $log->debug("############### Configuration summary ###############");
     $config = Configuration::create(Robo::config()->get('backup'));
     $projects = $config->getProjects();
+    $i = $j = 0;
     /** @var \EauDeWeb\Backup\Configuration\Project $project */
     foreach($projects as $id => $project) {
-      $this->say("    Project: ${id}");
+      $i++;
+      $log->debug("Project #{$i}: ${id}");
       $dbServers = $project->getMySQLServers();
-      $this->say("        MySQL databases:");
+      $log->debug("  * MySQL servers:");
+      $j = 0;
       /** @var  \EauDeWeb\Backup\Configuration\MySQLServer $server */
       foreach ($dbServers as $k => $server) {
-        $this->say(sprintf("            - {$k} (%s@%s)", $server->user(), $server->host()));
+        $j++;
         if ($server->validateConnection()) {
-          $this->say(sprintf("            - Connected successfully (mysqli loaded)"));
+          $log->debug(sprintf("    + #{$j} {$k} (%s@%s) - Connected successfully", $server->user(), $server->host()));
         }
         else {
-          $this->yell(sprintf("            - Cannot connect"), NULL, 'red');
+          $log->error(sprintf("    + #{$j} {$k} (%s@%s) - Cannot connect", $server->user(), $server->host()));
         }
-        $this->say(sprintf("            - Backup to %s", $server->backupDestination()));
         if ($server->validateBackupWritable()) {
-          $this->say(sprintf("            - Backup writable: YES"));
+          $log->debug(sprintf("      - Backup to %s (writable, OK)", $server->backupDestination()));
         }
         else {
-          $this->yell(sprintf("            - Backup writable: NO"), NULL, 'red');
+          $log->error(sprintf("      - Backup to %s (NOT writable)", $server->backupDestination()));
         }
         $databases = $server->databasesToBackup();
-        $this->say(sprintf("            - Backup databases: [%s]", implode(', ', $databases)));
+        if (empty($databases)) {
+          $log->warning("      - No databases to backup!");
+        }
+        else {
+          $log->debug(sprintf("      - Backup databases: %s", implode(', ', $databases)));
+        }
       }
 
       // Rsync tasks
       $rsyncTasks = $project->getRsyncTasks();
       if (!empty($rsyncTasks)) {
-        $this->say("        Rsync tasks:");
+        $log->debug("  * Rsync tasks:");
+        $j = 0;
         /** @var \EauDeWeb\Backup\Configuration\Rsync $task */
-        foreach ($rsyncTasks as $task) {
+        foreach ($rsyncTasks as $k => $task) {
+          $j++;
+          $log->debug(sprintf("    + #{$j} {$k}"));
           if ($task->validateLocalRsync($this->taskExec('which rsync'))) {
-            $this->say(sprintf("            - This host has rsync installed"));
+            $log->debug(sprintf("      - This host has rsync installed"));
           }
           else {
-            $this->yell(sprintf("            - This host is missing rsync command"), NULL, 'red');
+            $log->error(sprintf("      - This host is missing rsync command"), NULL, 'red');
           }
           if ($task->validateConnection($this->taskSshExec($task->host(), $task->user()))) {
-            $this->say(sprintf("            - Connected successfully (%s@%s:%d), target has rsync", $task->user(), $task->host(), $task->port()));
+            $log->debug(sprintf("      - Connected successfully (%s@%s:%d), target has rsync", $task->user(), $task->host(), $task->port()));
           }
           else {
-            $this->yell(sprintf("       - Unsuitable server: (%s@%s:%d)  - host unreachable or does not have rsync installed)", $task->user(), $task->host(), $task->port()), NULL, 'red');
+            $log->warning(sprintf("      - Unsuitable server: (%s@%s:%d)  - host unreachable or does not have rsync installed)", $task->user(), $task->host(), $task->port()));
           }
         }
       }
@@ -90,7 +101,7 @@ class RoboFile extends \Robo\Tasks {
    */
   public function backup() {
     $status = true;
-    $log = BackupLogger::get();
+    $log = BackupLogger::fileLogger();
     $app = Robo::application();
     $this->say(sprintf("🤖 %s v.%s - Crafted with ♥ at www.eaudeweb.ro", $app->getName(), $app->getVersion()));
     $log->debug("Registering shutdown hook");
