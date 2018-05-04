@@ -20,7 +20,7 @@ $statusCode = \Robo\Robo::run(
   $_SERVER['argv'],
   \EauDeWeb\Backup\Commands\RoboFile::class,
   'BackupRobot',
-  '0.0.2',
+  '0.0.3',
   $output
 );
 exit($statusCode);
