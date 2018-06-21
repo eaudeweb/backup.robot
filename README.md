@@ -10,7 +10,7 @@ Use backup robot for regular backup schedules. Features:
 
 Install on a target server the following components:
 
-- PHP >= 5.6 (ex. ` sudo apt-get install php php-cli php-curl php-dev php-gd  php-pear  php-gettext  php-http  php-xdebug  php-xml php-bcmath  php-zip  php-zip php-mbstring php-mysqli`)
+- PHP (ex. `yum install php71w-cli php71w-xml php71w-bcmath php71w-mbstring`)
 - Composer (through system package manager or preferable via https://getcomposer.org/download/)
 - MySQL client libraries for MySQL backup (`apt-get install mariadb-client`)
 
